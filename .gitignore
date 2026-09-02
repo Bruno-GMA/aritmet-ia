@@ -1,0 +1,17 @@
+# Spec files (source of truth - not for version control)
+prompt_pipeline_rag_ollama.md
+AGENTS.md
+
+# Virtual environment
+.venv/
+
+# Database
+pipeline/storage/vector_store.db
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment files
+.env
+.venv

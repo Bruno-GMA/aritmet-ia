@@ -1,0 +1,4 @@
+ollama
+sqlite-vec
+pandas
+numpy
