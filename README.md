@@ -113,3 +113,20 @@ Artefatos gerados em `pipeline/eval/output/`:
 - [ ] Implementação do pipeline em Python.
 - [ ] Validação de `MAX_CONTEXT_CHARS`.
 - [ ] Etapa `app-aritmetIA` (React Native + Expo) — porta do núcleo para mobile.
+
+## Avaliação de recuperação — schema v2
+
+As instruções atualizadas estão em [specs/retrieval-metrics.md](specs/retrieval-metrics.md). Esta seção substitui os exemplos
+anteriores de métricas e caminhos de saída: há cinco métricas, qrels opcionais,
+cobertura de julgamentos e agregação com denominadores explícitos. Artefatos sem
+`schema_version: 2` não são diretamente comparáveis ao novo recall/nDCG.
+
+```bash
+python -m pipeline.eval.run_eval --adaptive-k --qrels qrels.json --output-dir pipeline/eval/output/k-v2
+python -m pipeline.eval.run_eval --eval --output-dir pipeline/eval/output/eval-v2
+python -m pipeline.eval.run_eval --judge --output-dir pipeline/eval/output/eval-v2
+```
+
+Sem `--qrels`, usa-se o csv_id esperado. Avaliações criam diretórios novos;
+`--judge` recebe o diretório da avaliação para consolidar notas. Para testes:
+`python -m pip install -r requirements-dev.txt` e `python -m pytest tests -q`.

@@ -16,8 +16,8 @@ import sqlite3
 import struct
 from typing import Any
 
-import sqlite_vec
 import ollama
+import sqlite_vec
 
 from pipeline.config import (
     EMBED_MODEL,
@@ -99,3 +99,18 @@ def search(query: str, top_k: int = TOP_K) -> list[dict[str, Any]]:
             }
         )
     return results
+
+
+def corpus_ids() -> list[str]:
+    """IDs actually indexed (not just CSV metadata), for evaluation denominators."""
+    from pipeline.eval.ranking import validate_ids
+
+    db = _get_connection()
+    try:
+        rows = db.execute(
+            "SELECT m.csv_id FROM questions_meta m "
+            "JOIN questions_vec v ON v.rowid = m.rowid ORDER BY m.rowid"
+        ).fetchall()
+        return validate_ids([row[0] for row in rows], "índice vetorial")
+    finally:
+        db.close()

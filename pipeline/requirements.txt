@@ -3,3 +3,4 @@ sqlite-vec
 pandas
 numpy
 psutil
+sympy>=1.12

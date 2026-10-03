@@ -22,6 +22,8 @@ from collections import Counter
 from typing import Any
 
 from pipeline.core import retrieval
+from pipeline.eval import metrics
+from pipeline.eval.ranking import Qrels, validate_k
 
 
 def majority_operation(operacoes: list[str]) -> str:
@@ -47,6 +49,10 @@ def evaluate_k(
     expected_csv_id: str,
     k_values: list[int],
     operacao_gold: str = "",
+    *,
+    corpus_ids: list[str] | None = None,
+    query_id: str | None = None,
+    qrels: Qrels | None = None,
 ) -> dict[int, dict[str, Any]]:
     """
     Avalia o desempenho de retrieval para vários valores de k.
@@ -62,6 +68,14 @@ def evaluate_k(
         {k: {"hit", "rank", "distance", "operacao_gold",
              "operacoes_recuperadas", "operacao_consistente"}, ...}
     """
+    for k in k_values:
+        validate_k(k)
+    if len(set(k_values)) != len(k_values):
+        raise ValueError("Valores de k duplicados")
+    if qrels is not None and query_id is None:
+        raise ValueError("query_id obrigatório com qrels")
+    if corpus_ids is None:
+        corpus_ids = retrieval.corpus_ids()
     results: dict[int, dict[str, Any]] = {}
     for k in k_values:
         rows = retrieval.search(query, top_k=k)
@@ -78,6 +92,14 @@ def evaluate_k(
                 break
 
         results[k] = {
+            "metrics": metrics.evaluate_retrieval(
+                [row["csv_id"] for row in rows],
+                expected_csv_id,
+                k,
+                corpus_ids=corpus_ids,
+                query_id=query_id or expected_csv_id,
+                qrels=qrels,
+            ),
             "hit": hit,
             "rank": rank,
             "distance": distance,
