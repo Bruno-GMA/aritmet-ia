@@ -31,7 +31,7 @@ projeto/
 │   ├── storage/
 │   │   └── vector_store.db   # arquivo sqlite-vec
 │   ├── data/
-│   │   └── base.csv          # path definido em config.py (CSV_PATH)
+│   │   └── base_com_operacao.csv  # path definido em config.py (CSV_PATH)
 │   ├── cli.py                # entrypoint terminal
 │   └── requirements.txt
 └── app-aritmetIA/
@@ -48,7 +48,7 @@ projeto/
 | `TOP_K` | `3` | confirmado |
 | `MAX_CONTEXT_CHARS` | `800` | **assumido** — validar |
 
-Colunas do CSV: `ID`, `nível`, `questão` (indexada), `comparação`, `respostas_contextualizadas` (contexto na geração, não indexada).
+Colunas do CSV: `ID`, `nível`, `operação` (obrigatória), `questão` (indexada), `comparação`, `respostas_contextualizadas` (contexto na geração, não indexada).
 
 ## Dependências
 
@@ -57,15 +57,49 @@ ollama
 sqlite-vec
 pandas
 numpy
+psutil
 ```
 
 ## Como executar
 
-1. Instale as dependências: `pip install -r requirements.txt` (arquivo gerado a partir da seção acima).
-2. Garanta que o Ollama está rodando em `http://localhost:11434` com `gemma2:2b` e `nomic-embed-text`.
-3. Defina o caminho do CSV em `CSV_PATH` dentro de `config.py`.
-4. Gere os embeddings: execute a ingestão (`pipeline/core/ingest.py`).
-5. Rode o CLI: `python pipeline/cli.py`.
+1. Instale as dependências: `pip install -r pipeline/requirements.txt`.
+2. Garanta que o Ollama está rodando em `http://localhost:11434` com `CHAT_MODEL` e `nomic-embed-text` baixados.
+3. Defina o caminho do CSV em `CSV_PATH` dentro de `pipeline/config.py`.
+
+### CLI (assistente interativo)
+
+```bash
+python pipeline/cli.py                # RAG completo
+python pipeline/cli.py --no-rag       # skip retrieval (baseline sem contexto)
+```
+
+A ingestão é feita automaticamente na primeira execução (gera `storage/vector_store.db`).
+
+### Harness de avaliação
+
+```bash
+# 1. Roda o pipeline nas amostras (modos rag e no-rag) e gera artefatos
+python -m pipeline.eval.run_eval --eval
+
+# 2. Avaliação de qualidade via LLM de fronteira (ChatGPT/Claude):
+#    copie o conteúdo de pipeline/eval/output/judge_prompt.txt e cole no modelo.
+#    Cole de volta o JSON de notas no comando abaixo (termine com a linha 'EOF'):
+
+python -m pipeline.eval.run_eval --judge
+
+# 3. (Opcional) medir hit@k / MRR variando o TOP_K
+python -m pipeline.eval.run_eval --adaptive-k
+
+# 4. (Opcional) apontar um eval_set customizado
+python -m pipeline.eval.run_eval --eval --eval-set /caminho/para/eval_set.jsonl
+```
+
+Artefatos gerados em `pipeline/eval/output/`:
+
+- `results.jsonl` — uma linha por resposta (consulta, contexto, resposta, métricas psutil, ground truth).
+- `judge_prompt.txt` — bloco pronto para colar no LLM de fronteira.
+- `judge_scores.jsonl` — notas consolidadas do juiz (após `--judge`).
+- `metrics.json` — `hit@k`, MRR e notas do juiz por modo.
 
 ## Riscos / pendências
 

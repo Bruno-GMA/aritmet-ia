@@ -59,12 +59,15 @@ def generate(query: str, context_results: list[dict[str, Any]]) -> str:
         Texto da resposta do LLM.
     """
     system_prompt = get_system_prompt()
-    context_block = _build_context_block(context_results)
 
-    user_message = (
-        f"Contexto recuperado:\n\n{context_block}\n\n"
-        f"Pergunta do usuário:\n{query}"
-    )
+    if context_results:
+        context_block = _build_context_block(context_results)
+        user_message = (
+            f"Contexto recuperado:\n\n{context_block}\n\n"
+            f"Pergunta do usuário:\n{query}"
+        )
+    else:
+        user_message = f"Pergunta do usuário:\n{query}"
 
     client = ollama.Client(host=OLLAMA_HOST)
     response = client.chat(

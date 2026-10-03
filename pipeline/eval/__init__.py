@@ -1,0 +1,1 @@
+# pipeline/eval — harness de avaliação (ver specs/eval-harness.md, specs/llm-as-judge.md)

@@ -2,3 +2,4 @@ ollama
 sqlite-vec
 pandas
 numpy
+psutil

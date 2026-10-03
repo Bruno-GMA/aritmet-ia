@@ -7,6 +7,7 @@ Toda lógica de negócio fica em pipeline/core/*.
 
 from __future__ import annotations
 
+import argparse
 import sys
 import os
 
@@ -28,11 +29,13 @@ def _run_ingest() -> None:
     print(f"✅ {count} linhas indexadas com sucesso!\n")
 
 
-def _ask_loop() -> None:
+def _ask_loop(use_rag: bool) -> None:
     """Loop principal de perguntas."""
     print("=" * 60)
     print("  aritmet.IA — Assistente de Matemática (RAG local)")
     print("  Digite 'sair' para encerrar.")
+    if not use_rag:
+        print("  [modo --no-rag] geração sem recuperação de contexto.")
     print("=" * 60)
     print()
 
@@ -50,14 +53,16 @@ def _ask_loop() -> None:
             break
 
         query_final = query
+        context = []
 
-        # ── Retrieval ──────────────────────────────────────
-        print("🔍 Buscando contexto relevante...")
-        context = retrieval.search(query_final)
+        # ── Retrieval (pulado em --no-rag) ──────────────────
+        if use_rag:
+            print("🔍 Buscando contexto relevante...")
+            context = retrieval.search(query_final)
 
-        if not context:
-            print("⚠️  Nenhum resultado encontrado no banco vetorial.\n")
-            continue
+            if not context:
+                print("⚠️  Nenhum resultado encontrado no banco vetorial.\n")
+                continue
 
         # ── Generation ─────────────────────────────────────
         print("🤖 Gerando resposta...\n")
@@ -67,13 +72,21 @@ def _ask_loop() -> None:
 
 def main() -> None:
     """Entrypoint principal."""
+    parser = argparse.ArgumentParser(description="aritmet.IA — RAG local")
+    parser.add_argument(
+        "--no-rag",
+        action="store_true",
+        help="Pula a etapa de retrieval (baseline sem contexto).",
+    )
+    args = parser.parse_args()
+
     if not os.path.exists(CSV_PATH):
         print(f"❌ CSV não encontrado em: {CSV_PATH}")
-        print("   Coloque o arquivo base.csv em pipeline/data/ e tente novamente.")
+        print("   Coloque o arquivo base_com_operacao.csv em pipeline/data/ e tente novamente.")
         sys.exit(1)
 
     _run_ingest()
-    _ask_loop()
+    _ask_loop(use_rag=not args.no_rag)
 
 
 if __name__ == "__main__":

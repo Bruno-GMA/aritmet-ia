@@ -69,6 +69,7 @@ def search(query: str, top_k: int = TOP_K) -> list[dict[str, Any]]:
             v.distance,
             m.csv_id,
             m.nivel,
+            m.operacao,
             m.questao,
             m.comparacao,
             m.resposta_contextualizada
@@ -91,9 +92,10 @@ def search(query: str, top_k: int = TOP_K) -> list[dict[str, Any]]:
                 "distance": row[1],
                 "csv_id": row[2],
                 "nivel": row[3],
-                "questao": row[4],
-                "comparacao": row[5],
-                "resposta_contextualizada": row[6],
+                "operacao": row[4],
+                "questao": row[5],
+                "comparacao": row[6],
+                "resposta_contextualizada": row[7],
             }
         )
     return results
