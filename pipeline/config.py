@@ -27,6 +27,8 @@ VECTOR_DB_PATH = os.path.join(os.path.dirname(__file__), "storage", "vector_stor
 # ── Retrieval ──────────────────────────────────────────────
 TOP_K = 3  # nº de linhas recuperadas por consulta
 TOP_K_RANGE = [1, 2, 3, 4, 5, 6, 7]  # candidatos avaliados pelo adaptive-k
+RERANK_ENABLED = False  # experimental; baseline remains the default
+RERANK_CANDIDATE_K = 9
 
 # ── Geração ────────────────────────────────────────────────
 MAX_CONTEXT_CHARS = 800  # [ASSUMIDO] truncamento de segurança por resposta recuperada

@@ -71,6 +71,7 @@ psutil
 ```bash
 python pipeline/cli.py                # RAG completo
 python pipeline/cli.py --no-rag       # geração direta; não abre banco nem cria embeddings
+python pipeline/cli.py --rerank       # experimental: reordena 9 candidatos e usa TOP_K
 ```
 
 A ingestão é feita automaticamente na primeira execução (gera `storage/vector_store.db`).
@@ -124,6 +125,7 @@ cobertura de julgamentos e agregação com denominadores explícitos. Artefatos 
 ```bash
 python -m pipeline.eval.run_eval --adaptive-k --qrels qrels.json --output-dir pipeline/eval/output/k-v2
 python -m pipeline.eval.run_eval --eval --output-dir pipeline/eval/output/eval-v2
+python -m pipeline.eval.run_eval --eval --rerank --output-dir pipeline/eval/output/rerank-v1
 python -m pipeline.eval.run_eval --judge --output-dir pipeline/eval/output/eval-v2 \
   --judge-model "modelo-e-versão-declarados"
 ```
@@ -143,3 +145,12 @@ notas (pedagogia, correção semântica, coerência lógica, completude e
 fundamentação), justificativas e evidências. Ela preserva `judge_raw.json`,
 informa itens ausentes sem atribuir nota zero e não permite sobrescrever uma
 importação existente.
+
+## Reranking experimental
+
+O reranking permanece desligado por padrão. Quando solicitado por `--rerank`,
+recupera `candidate_k=9` e escolhe `final_k=TOP_K` pelo método local e
+determinístico `distance-operation-v1` (similaridade normalizada: 0,8;
+compatibilidade de operação inferida: 0,2). Os artefatos de avaliação registram
+ranks, distâncias originais, componentes e seleção. Compare um diretório baseline
+e outro `--rerank` sobre o mesmo `eval_set` antes de habilitá-lo permanentemente.
