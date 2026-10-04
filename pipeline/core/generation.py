@@ -29,7 +29,7 @@ def truncate_context(text: str, max_chars: int = MAX_CONTEXT_CHARS) -> str:
     return text[:max_chars]
 
 
-def _build_context_block(results: list[dict[str, Any]]) -> str:
+def build_context_block(results: list[dict[str, Any]]) -> str:
     """
     Monta bloco de contexto a partir das linhas recuperadas.
     Cada entrada inclui a questão original e a resposta contextualizada truncada.
@@ -38,13 +38,25 @@ def _build_context_block(results: list[dict[str, Any]]) -> str:
     for i, r in enumerate(results, start=1):
         resp = truncate_context(str(r.get("resposta_contextualizada", "")))
         block = (
-            f"--- Contexto {i} ---\n"
+            f"--- Contexto {i} (fonte: {r.get('csv_id', '')}) ---\n"
             f"Questão: {r.get('questao', '')}\n"
             f"Nível: {r.get('nivel', '')}\n"
             f"Resposta contextualizada:\n{resp}\n"
         )
         blocks.append(block)
     return "\n".join(blocks)
+
+
+# Backwards-compatible internal name used by older callers.
+_build_context_block = build_context_block
+
+
+def build_user_message(query: str, context_results: list[dict[str, Any]]) -> str:
+    """Build the exact user message sent to Ollama, for reproducible judging."""
+    if context_results:
+        context_block = build_context_block(context_results)
+        return f"Contexto recuperado:\n\n{context_block}\n\nPergunta do usuário:\n{query}"
+    return f"Pergunta do usuário:\n{query}"
 
 
 def generate(query: str, context_results: list[dict[str, Any]]) -> str:
@@ -59,12 +71,8 @@ def generate(query: str, context_results: list[dict[str, Any]]) -> str:
         Texto da resposta do LLM.
     """
     system_prompt = get_system_prompt()
-    context_block = _build_context_block(context_results)
 
-    user_message = (
-        f"Contexto recuperado:\n\n{context_block}\n\n"
-        f"Pergunta do usuário:\n{query}"
-    )
+    user_message = build_user_message(query, context_results)
 
     client = ollama.Client(host=OLLAMA_HOST)
     response = client.chat(

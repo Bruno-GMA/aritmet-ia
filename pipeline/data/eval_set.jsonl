@@ -1,0 +1,36 @@
+{"id": "eval_358", "questão": "Laura colheu 24 lápis pela manhã e 63 lápis à tarde. Quantos lápis Laura colheu no total?", "csv_id_esperado": "358", "nível": "fácil", "operação": "soma"}
+{"id": "eval_5", "questão": "Na papelaria, Maria contou 31 adesivos numa caixa e 18 adesivos em outra caixa. Quantos adesivos há ao todo?", "csv_id_esperado": "5", "nível": "fácil", "operação": "soma"}
+{"id": "eval_278", "questão": "Na feira, Marina contou 81 maçãs numa caixa e 60 maçãs em outra caixa. Quantas maçãs há ao todo?", "csv_id_esperado": "278", "nível": "fácil", "operação": "soma"}
+{"id": "eval_447", "questão": "Júlia tinha 4402 bolinhas de gude e ganhou mais 8875 bolinhas de gude de presente. Quantas bolinhas de gude Júlia tem agora, ao todo?", "csv_id_esperado": "447", "nível": "intermediário", "operação": "soma"}
+{"id": "eval_9", "questão": "Ana colheu 5286 cadernos pela manhã e 6148 cadernos à tarde. Quantos cadernos Ana colheu no total?", "csv_id_esperado": "9", "nível": "intermediário", "operação": "soma"}
+{"id": "eval_347", "questão": "Miguel tinha 2741 brinquedos e ganhou mais 1750 brinquedos de presente. Quantos brinquedos Miguel tem agora, ao todo?", "csv_id_esperado": "347", "nível": "intermediário", "operação": "soma"}
+{"id": "eval_826", "questão": "Na doceria, Lívia contou 995,54 chocolates numa caixa e 716,32 chocolates em outra caixa. Quantos chocolates há ao todo?", "csv_id_esperado": "826", "nível": "difícil", "operação": "soma"}
+{"id": "eval_3", "questão": "No mercado, Marina contou 517,36 balas numa caixa e 688,51 balas em outra caixa. Quantas balas há ao todo?", "csv_id_esperado": "3", "nível": "difícil", "operação": "soma"}
+{"id": "eval_706", "questão": "Marina tinha 822,89 cadernos e ganhou mais 127,83 cadernos de presente. Quantos cadernos Marina tem agora, ao todo?", "csv_id_esperado": "706", "nível": "difícil", "operação": "soma"}
+{"id": "eval_390", "questão": "Davi tinha 93 maçãs e deu 63 maçãs para um amigo. Com quantas maçãs Davi ficou?", "csv_id_esperado": "390", "nível": "fácil", "operação": "subtração"}
+{"id": "eval_14", "questão": "Guilherme tinha 80 flores e perdeu 41 flores no caminho da escola. Quantas flores restaram?", "csv_id_esperado": "14", "nível": "fácil", "operação": "subtração"}
+{"id": "eval_314", "questão": "Lívia tinha 65 flores e perdeu 24 flores no caminho da escola. Quantas flores restaram?", "csv_id_esperado": "314", "nível": "fácil", "operação": "subtração"}
+{"id": "eval_417", "questão": "Yasmin tinha 2571 flores e perdeu 1813 flores no caminho da escola. Quantas flores restaram?", "csv_id_esperado": "417", "nível": "intermediário", "operação": "subtração"}
+{"id": "eval_33", "questão": "Heitor tinha 5088 adesivos e deu 2110 adesivos para um amigo. Com quantos adesivos Heitor ficou?", "csv_id_esperado": "33", "nível": "intermediário", "operação": "subtração"}
+{"id": "eval_337", "questão": "Na feira, havia 7438 maçãs e 6161 foram vendidos. Quantas maçãs sobraram?", "csv_id_esperado": "337", "nível": "intermediário", "operação": "subtração"}
+{"id": "eval_875", "questão": "No mercado, havia 562,63 balas e 458,10 foram vendidos. Quantas balas sobraram?", "csv_id_esperado": "875", "nível": "difícil", "operação": "subtração"}
+{"id": "eval_12", "questão": "Na banca de jornal, havia 671,91 figurinhas e 512,57 foram vendidos. Quantas figurinhas sobraram?", "csv_id_esperado": "12", "nível": "difícil", "operação": "subtração"}
+{"id": "eval_626", "questão": "Isabela tinha 516,41 brinquedos e deu 354,03 brinquedos para um amigo. Com quantos brinquedos Isabela ficou?", "csv_id_esperado": "626", "nível": "difícil", "operação": "subtração"}
+{"id": "eval_285", "questão": "Na papelaria, cada caderno custa R$ 77. Se Arthur comprar 8 cadernos, quanto vai gastar no total?", "csv_id_esperado": "285", "nível": "fácil", "operação": "multiplicação"}
+{"id": "eval_18", "questão": "Na papelaria, cada lápis custa R$ 27. Se Nicolas comprar 5 lápis, quanto vai gastar no total?", "csv_id_esperado": "18", "nível": "fácil", "operação": "multiplicação"}
+{"id": "eval_198", "questão": "Ana foi à loja de esportes e comprou 4 bolas, sendo cada bola R$ 38. Quanto Ana pagou ao todo?", "csv_id_esperado": "198", "nível": "fácil", "operação": "multiplicação"}
+{"id": "eval_820", "questão": "Camila foi ao parquinho e comprou 2 bolinhas de gude, sendo cada bolinha de gude R$ 4770. Quanto Camila pagou ao todo?", "csv_id_esperado": "820", "nível": "intermediário", "operação": "multiplicação"}
+{"id": "eval_4", "questão": "Gabriel foi à feira e comprou 2 ovos, sendo cada ovo R$ 5905. Quanto Gabriel pagou ao todo?", "csv_id_esperado": "4", "nível": "intermediário", "operação": "multiplicação"}
+{"id": "eval_667", "questão": "Na banca de jornal, cada figurinha custa R$ 5061. Se Davi comprar 3 figurinhas, quanto vai gastar no total?", "csv_id_esperado": "667", "nível": "intermediário", "operação": "multiplicação"}
+{"id": "eval_822", "questão": "Na banca de jornal, cada figurinha custa R$ 818,80. Se Júlia comprar 2 figurinhas, quanto vai gastar no total?", "csv_id_esperado": "822", "nível": "difícil", "operação": "multiplicação"}
+{"id": "eval_6", "questão": "Alice foi à padaria e comprou 8 biscoitos, sendo cada biscoito R$ 524,47. Quanto Alice pagou ao todo?", "csv_id_esperado": "6", "nível": "difícil", "operação": "multiplicação"}
+{"id": "eval_651", "questão": "Na papelaria, cada lápis custa R$ 926,49. Se Júlia comprar 9 lápis, quanto vai gastar no total?", "csv_id_esperado": "651", "nível": "difícil", "operação": "multiplicação"}
+{"id": "eval_427", "questão": "Vicente ganhou R$ 264 e quer dividir em partes iguais entre 4 irmãos. Quanto cada um recebe?", "csv_id_esperado": "427", "nível": "fácil", "operação": "divisão"}
+{"id": "eval_2", "questão": "Théo tem R$ 532 para repartir igualmente entre 7 amigos. Quanto cada amigo vai receber?", "csv_id_esperado": "2", "nível": "fácil", "operação": "divisão"}
+{"id": "eval_284", "questão": "Lucas tem R$ 408 para repartir igualmente entre 6 amigos. Quanto cada amigo vai receber?", "csv_id_esperado": "284", "nível": "fácil", "operação": "divisão"}
+{"id": "eval_393", "questão": "Elisa tem R$ 42028 para repartir igualmente entre 7 amigos. Quanto cada amigo vai receber?", "csv_id_esperado": "393", "nível": "intermediário", "operação": "divisão"}
+{"id": "eval_16", "questão": "Isabela tem R$ 32472 para repartir igualmente entre 9 amigos. Quanto cada amigo vai receber?", "csv_id_esperado": "16", "nível": "intermediário", "operação": "divisão"}
+{"id": "eval_281", "questão": "Pedro tem R$ 11112 para repartir igualmente entre 4 amigos. Quanto cada amigo vai receber?", "csv_id_esperado": "281", "nível": "intermediário", "operação": "divisão"}
+{"id": "eval_352", "questão": "Yasmin tem R$ 3123,64 para repartir igualmente entre 4 amigos. Quanto cada amigo vai receber?", "csv_id_esperado": "352", "nível": "difícil", "operação": "divisão"}
+{"id": "eval_1", "questão": "Caio tem R$ 1604,96 para repartir igualmente entre 8 amigos. Quanto cada amigo vai receber?", "csv_id_esperado": "1", "nível": "difícil", "operação": "divisão"}
+{"id": "eval_261", "questão": "Elisa tem R$ 6888,07 para repartir igualmente entre 7 amigos. Quanto cada amigo vai receber?", "csv_id_esperado": "261", "nível": "difícil", "operação": "divisão"}

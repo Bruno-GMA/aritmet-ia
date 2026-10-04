@@ -12,10 +12,11 @@ EMBED_MODEL = "nomic-embed-text"
 OLLAMA_HOST = "http://localhost:11434"
 
 # ── CSV ────────────────────────────────────────────────────
-CSV_PATH = os.path.join(os.path.dirname(__file__), "data", "base.csv")
+CSV_PATH = os.path.join(os.path.dirname(__file__), "data", "base_com_operacao.csv")
 
 COLUMN_ID = "ID"
 COLUMN_NIVEL = "nível"
+COLUMN_OPERACAO = "operação"                   # coluna obrigatória — usada na avaliação estratificada
 EMBED_COLUMN = "questão"                       # única coluna indexada/embedada para busca
 CONTEXT_COLUMN = "respostas_contextualizadas"  # entregue como contexto na geração, não indexada
 COLUMN_COMPARACAO = "comparação"
@@ -25,6 +26,7 @@ VECTOR_DB_PATH = os.path.join(os.path.dirname(__file__), "storage", "vector_stor
 
 # ── Retrieval ──────────────────────────────────────────────
 TOP_K = 3  # nº de linhas recuperadas por consulta
+TOP_K_RANGE = [1, 2, 3, 4, 5, 6, 7]  # candidatos avaliados pelo adaptive-k
 
 # ── Geração ────────────────────────────────────────────────
 MAX_CONTEXT_CHARS = 800  # [ASSUMIDO] truncamento de segurança por resposta recuperada

@@ -5,7 +5,7 @@ Spec §6:
   1. Lê CSV com pandas.
   2. Para cada linha, gera UM embedding da coluna `questão` (EMBED_COLUMN).
   3. Persiste no sqlite-vec (vec0): id, texto da questão, embedding,
-     metadados completos (nível, comparação, respostas_contextualizadas).
+     metadados completos (nível, operação, comparação, respostas_contextualizadas).
 
 Nenhum print/input aqui — toda I/O fica em cli.py (ver AGENTS.md).
 """
@@ -27,6 +27,7 @@ from pipeline.config import (
     CSV_PATH,
     COLUMN_ID,
     COLUMN_NIVEL,
+    COLUMN_OPERACAO,
     EMBED_COLUMN,
     CONTEXT_COLUMN,
     COLUMN_COMPARACAO,
@@ -66,7 +67,14 @@ def _get_connection() -> sqlite3.Connection:
 
 def load_csv() -> pd.DataFrame:
     """Carrega e valida o CSV base."""
-    required = [COLUMN_ID, COLUMN_NIVEL, EMBED_COLUMN, COLUMN_COMPARACAO, CONTEXT_COLUMN]
+    required = [
+        COLUMN_ID,
+        COLUMN_NIVEL,
+        COLUMN_OPERACAO,
+        EMBED_COLUMN,
+        COLUMN_COMPARACAO,
+        CONTEXT_COLUMN,
+    ]
     df = pd.read_csv(CSV_PATH)
     missing = [c for c in required if c not in df.columns]
     if missing:
@@ -98,6 +106,7 @@ def ingest(df: pd.DataFrame) -> int:
             rowid   INTEGER PRIMARY KEY,
             csv_id  TEXT,
             nivel   TEXT,
+            operacao TEXT,
             questao TEXT,
             comparacao TEXT,
             resposta_contextualizada TEXT
@@ -119,12 +128,13 @@ def ingest(df: pd.DataFrame) -> int:
         rowid = int(idx) + 1  # 1-based
 
         cur.execute(
-            "INSERT INTO questions_meta (rowid, csv_id, nivel, questao, comparacao, resposta_contextualizada) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO questions_meta (rowid, csv_id, nivel, operacao, questao, comparacao, resposta_contextualizada) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
             (
                 rowid,
                 str(row[COLUMN_ID]),
                 str(row.get(COLUMN_NIVEL, "")),
+                str(row.get(COLUMN_OPERACAO, "")),
                 questao_text,
                 str(row.get(COLUMN_COMPARACAO, "")),
                 str(row.get(CONTEXT_COLUMN, "")),
