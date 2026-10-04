@@ -81,6 +81,9 @@ def test_eval_exports_metrics_nulls_and_no_overwrite(experiment, tmp_path):
     output = tmp_path / "eval-output"
     run_eval.run_eval(str(samples), str(qrels), str(output))
     data = json.loads((output / "metrics.json").read_text())
+    manifest = json.loads((output / "manifest.json").read_text())
+    assert manifest["modes"] == ["rag", "no-rag"]
+    assert manifest["inputs"]["evaluation_set"]["sha256"]
     assert data["schema_version"] == 2
     assert data["metrics"]["precision_at_k"] == data["metrics"]["recall_at_k"] == 0.5
     assert data["valid_counts"]["recall_at_k"] == 1
@@ -88,7 +91,10 @@ def test_eval_exports_metrics_nulls_and_no_overwrite(experiment, tmp_path):
     records = [json.loads(line) for line in (output / "results.jsonl").read_text().splitlines()]
     assert len(records) == len(calls) == 4
     assert all(r["retrieval_quality"] is None for r in records if r["mode"] == "no-rag")
+    assert all(r["contexto_enviado"] is None for r in records if r["mode"] == "no-rag")
+    assert "fonte: a" in records[0]["contexto_enviado"]
     assert calls[1] == calls[3] == []
+    assert data["paired_comparison"]["valid_pairs"] == 2
     original = (output / "metrics.json").read_bytes()
     with pytest.raises(FileExistsError):
         run_eval.run_eval(str(samples), str(qrels), str(output))

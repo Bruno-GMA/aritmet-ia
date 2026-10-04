@@ -70,7 +70,7 @@ psutil
 
 ```bash
 python pipeline/cli.py                # RAG completo
-python pipeline/cli.py --no-rag       # skip retrieval (baseline sem contexto)
+python pipeline/cli.py --no-rag       # geração direta; não abre banco nem cria embeddings
 ```
 
 A ingestão é feita automaticamente na primeira execução (gera `storage/vector_store.db`).
@@ -124,9 +124,22 @@ cobertura de julgamentos e agregação com denominadores explícitos. Artefatos 
 ```bash
 python -m pipeline.eval.run_eval --adaptive-k --qrels qrels.json --output-dir pipeline/eval/output/k-v2
 python -m pipeline.eval.run_eval --eval --output-dir pipeline/eval/output/eval-v2
-python -m pipeline.eval.run_eval --judge --output-dir pipeline/eval/output/eval-v2
+python -m pipeline.eval.run_eval --judge --output-dir pipeline/eval/output/eval-v2 \
+  --judge-model "modelo-e-versão-declarados"
 ```
 
 Sem `--qrels`, usa-se o csv_id esperado. Avaliações criam diretórios novos;
 `--judge` recebe o diretório da avaliação para consolidar notas. Para testes:
 `python -m pip install -r requirements-dev.txt` e `python -m pytest tests -q`.
+
+Cada execução `--eval` agora grava também `manifest.json` (modelos, hashes dos
+insumos, ordem dos modos e política de cache) e inclui `paired_comparison` em
+`metrics.json`. Falhas são mantidas por `id`/modo em `results.jsonl`; métricas de
+recuperação no modo `no-rag` são `null` por não serem aplicáveis.
+
+O pacote `judge_prompt.txt` usa IDs opacos e ordem embaralhada reproduzível; o
+mapa privado fica em `judge_map.json`. A importação da rubrica v2 exige cinco
+notas (pedagogia, correção semântica, coerência lógica, completude e
+fundamentação), justificativas e evidências. Ela preserva `judge_raw.json`,
+informa itens ausentes sem atribuir nota zero e não permite sobrescrever uma
+importação existente.

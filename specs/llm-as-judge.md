@@ -32,22 +32,27 @@ Cada bloco do batch contém:
 [RESPOSTA DO PIPELINE] <saída de generation.generate()>
 ```
 
-### Rubrica (escala 1–5 + justificativa)
+### Rubrica v2 (escala 1–5 + justificativa + evidência)
 
-Critérios:
+Critérios vigentes:
 
-1. **Não resolve a questão do usuário diretamente** (não reusa números/nomes).
-2. **Exemplo análogo válido** (mesma estrutura lógica, dados alterados).
-3. **Operação correta identificada** (soma/subtração/multiplicação/divisão).
-4. **Passo a passo claro e numerado**.
-5. **Não-invenção** (não afirma informação fora do contexto/questão).
+1. **Qualidade pedagógica** — ensino por analogia, operação explicada e passos.
+2. **Correção semântica** — interpretação e matemática da resposta.
+3. **Coerência lógica** — conclusões derivam dos passos e não se contradizem.
+4. **Completude** — cobre os elementos requeridos pelo tutor.
+5. **Fundamentação** — apoio no contexto/pergunta ou derivação matemática válida.
+
+Cada dimensão recebe `score`, `justification` e `evidence`. Em `no-rag`,
+`fundamentacao.status` é `not_applicable`: a ausência de contexto não é erro;
+avaliam-se a derivação e a coerência com a pergunta. As âncoras 1/3/5 e os
+erros exemplificados estão no próprio prompt gerado (`judge-rubric-v2`).
 
 ### Contrato JSON de retorno (instruído no prompt)
 
 O juiz deve devolver, para cada item, um objeto:
 
 ```json
-{"id": "eval_001", "mode": "rag", "score": 4, "justification": "..."}
+{"id": "j0001-opaque", "criteria": {"qualidade_pedagogica": {"score": 4, "justification": "...", "evidence": ["..."]}, "correcao_semantica": {"score": 4, "justification": "...", "evidence": ["..."]}, "coerencia_logica": {"score": 4, "justification": "...", "evidence": ["..."]}, "completude": {"score": 4, "justification": "...", "evidence": ["..."]}, "fundamentacao": {"score": 4, "justification": "...", "evidence": ["..."], "status": "applicable"}}}
 ```
 
 ### `judge_import.py` (sem I/O)
@@ -61,8 +66,10 @@ def parse_judge_output(text: str) -> list[dict]:
 
 1. `run_eval --eval` gera respostas + `judge_prompt.txt`.
 2. Usuário cola `judge_prompt.txt` no ChatGPT/Claude, recebe o JSON de notas.
-3. `run_eval --judge` reaceita o JSON colado (`input()`/arquivo), grava
-   `judge_scores.jsonl` e recalcula `metrics.json` agregando as notas.
+3. `run_eval --judge --judge-model "..."` reaceita o JSON colado, valida IDs
+   opacos, duplicatas, cinco critérios e faixas, grava `judge_raw.json` e
+   `judge_scores.jsonl` e recalcula `metrics.json` por dimensão/modo/operação.
+   Itens faltantes ficam explícitos, sem virar nota zero.
 
 ## Critérios de aceite
 

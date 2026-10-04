@@ -15,8 +15,11 @@ Exemplos:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
+import random
+import statistics
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -29,6 +32,7 @@ from pipeline.core import generation, ingest, retrieval
 from pipeline.core.monitoring import Profiler, summarize_stage_records
 from pipeline.eval import dataset, judge_import, judge_prompt, math_evaluation, metrics
 from pipeline.eval.ranking import Qrels
+from pipeline.system_prompt import get_system_prompt
 
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "output")
 
@@ -38,6 +42,85 @@ def _new_output_dir(output_dir: str | None) -> Path:
     path = Path(output_dir) if output_dir else Path(OUTPUT_DIR) / stamp
     path.mkdir(parents=True, exist_ok=False)
     return path
+
+
+def _sha256(path: str | Path) -> str:
+    """Return a stable input fingerprint without copying the experiment input."""
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as source:
+        for block in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _write_manifest(output: Path, eval_set_path: str, qrels_path: str | None) -> dict:
+    """Persist conditions shared by both modes before any model call."""
+    from pipeline.config import CHAT_MODEL, CSV_PATH, EMBED_MODEL, VECTOR_DB_PATH
+
+    manifest = {
+        "schema_version": 1,
+        "run_id": output.name,
+        "project": "aritmet.IA",
+        "modes": ["rag", "no-rag"],
+        "mode_order": ["rag", "no-rag"],
+        "repetitions": 1,
+        "seed": None,
+        "generation": {"model": CHAT_MODEL, "output_budget": None},
+        "embedding_model": EMBED_MODEL,
+        "inputs": {
+            "evaluation_set": {"path": str(Path(eval_set_path).resolve()), "sha256": _sha256(eval_set_path)},
+            "corpus": {"path": str(Path(CSV_PATH).resolve()), "sha256": _sha256(CSV_PATH)},
+            "qrels": (
+                {"path": str(Path(qrels_path).resolve()), "sha256": _sha256(qrels_path)}
+                if qrels_path
+                else None
+            ),
+            "vector_index": str(Path(VECTOR_DB_PATH).resolve()),
+        },
+        "notes": {
+            "retrieval_metrics_no_rag": "not_applicable",
+            "cache_policy": "no response cache; the vector corpus is shared read-only",
+        },
+    }
+    with (output / "manifest.json").open("x", encoding="utf-8") as target:
+        json.dump(manifest, target, ensure_ascii=False, indent=2)
+    return manifest
+
+
+def _paired_summary(records: list[dict]) -> dict:
+    """Summarize only complete rag/no-rag pairs; failures remain explicit."""
+    grouped: dict[str, dict[str, dict]] = {}
+    for record in records:
+        grouped.setdefault(record["id"], {})[record["mode"]] = record
+    pairs = [entry for entry in grouped.values() if set(entry) == {"rag", "no-rag"}]
+
+    def elapsed(record: dict) -> float | None:
+        metric = record.get("generation_metrics") or {}
+        value = metric.get("elapsed_ms")
+        return float(value) / 1000 if isinstance(value, int | float) else None
+
+    deltas = [
+        elapsed(pair["rag"]) - elapsed(pair["no-rag"])
+        for pair in pairs
+        if pair["rag"].get("status") == pair["no-rag"].get("status") == "ok"
+        and elapsed(pair["rag"]) is not None
+        and elapsed(pair["no-rag"]) is not None
+    ]
+    mean = sum(deltas) / len(deltas) if deltas else None
+    dispersion = (
+        (sum((value - mean) ** 2 for value in deltas) / len(deltas)) ** 0.5 if deltas else None
+    )
+    return {
+        "total_query_ids": len(grouped),
+        "valid_pairs": len(deltas),
+        "incomplete_pairs": len(grouped) - len(pairs),
+        "failed_pairs": sum(any(row.get("status") != "ok" for row in pair.values()) for pair in pairs),
+        "generation_latency_delta_rag_minus_no_rag_s": {
+            "mean": mean,
+            "population_stddev": dispersion,
+            "values": deltas,
+        },
+    }
 
 
 def _load_qrels(path: str | None, corpus_ids: list[str]) -> Qrels | None:
@@ -90,11 +173,13 @@ def run_eval(
     corpus_ids = retrieval.corpus_ids()
     qrels = _load_qrels(qrels_path, corpus_ids)
     output = _new_output_dir(output_dir)
+    manifest = _write_manifest(output, eval_set_path, qrels_path)
     results_path = output / "results.jsonl"
     judge_path = output / "judge_prompt.txt"
     per_query: list[dict] = []
     math_rows: list[dict] = []
     stage_records: list[dict] = []
+    records: list[dict] = []
     run_id = output.name
 
     judge_items: list[dict] = []
@@ -111,22 +196,23 @@ def run_eval(
             for mode in ("rag", "no-rag"):
                 context: list[dict] = []
                 profiler_retrieval: dict | None = None
+                retrieval_quality: dict | None = None
                 ids: list[str] = []
                 ops: list[str] = []
 
-                if mode == "rag":
-                    with Profiler(
-                        "retrieval", run_id=run_id, query_id=sample["id"], mode=mode
-                    ) as p:
-                        context = retrieval.search(query, top_k=TOP_K)
-                    profiler_retrieval = p.result
-                    if profiler_retrieval:
-                        stage_records.append(profiler_retrieval)
-                    ids = [str(r.get("csv_id", "")) for r in context]
-                    ops = [str(r.get("operacao", "")) for r in context]
-                    retrieved_ops.append(ops)
-                    per_query.append(
-                        metrics.evaluate_retrieval(
+                try:
+                    if mode == "rag":
+                        with Profiler(
+                            "retrieval", run_id=run_id, query_id=sample["id"], mode=mode
+                        ) as p:
+                            context = retrieval.search(query, top_k=TOP_K)
+                        profiler_retrieval = p.result
+                        if profiler_retrieval:
+                            stage_records.append(profiler_retrieval)
+                        ids = [str(r.get("csv_id", "")) for r in context]
+                        ops = [str(r.get("operacao", "")) for r in context]
+                        retrieved_ops.append(ops)
+                        retrieval_quality = metrics.evaluate_retrieval(
                             ids,
                             expected,
                             TOP_K,
@@ -134,15 +220,19 @@ def run_eval(
                             query_id=sample["id"],
                             qrels=qrels,
                         )
-                    )
-
-                with Profiler("generation", run_id=run_id, query_id=sample["id"], mode=mode) as pg:
-                    answer = generation.generate(query, context)
-                profiler_generation = pg.result
-                if profiler_generation:
-                    stage_records.append(profiler_generation)
+                        per_query.append(retrieval_quality)
+                    with Profiler("generation", run_id=run_id, query_id=sample["id"], mode=mode) as pg:
+                        answer = generation.generate(query, context)
+                    profiler_generation = pg.result
+                    if profiler_generation:
+                        stage_records.append(profiler_generation)
+                    status, error = "ok", None
+                except Exception as exc:
+                    answer, profiler_generation = "", None
+                    status, error = "error", f"{type(exc).__name__}: {exc}"
                 math_result = math_evaluation.evaluate_analogous_answer(answer)
                 math_rows.append(math_result)
+                sent_context = generation.build_context_block(context) if context else None
 
                 record = {
                     "id": sample["id"],
@@ -152,13 +242,17 @@ def run_eval(
                     "operação": sample.get("operação", ""),
                     "csv_id_esperado": expected,
                     "contexto_recuperado": ids,
+                    "contexto_enviado": sent_context,
                     "resposta_llm": answer,
                     "math_evaluation": math_result,
-                    "retrieval_quality": per_query[-1] if mode == "rag" else None,
+                    "retrieval_quality": retrieval_quality,
                     "retrieval_metrics": profiler_retrieval,
                     "generation_metrics": profiler_generation,
+                    "status": status,
+                    "error": error,
                 }
                 out.write(json.dumps(record, ensure_ascii=False) + "\n")
+                records.append(record)
 
                 # itens para o judge (apenas referência + resposta)
                 judge_items.append(
@@ -167,17 +261,31 @@ def run_eval(
                         "mode": mode,
                         "questão": query,
                         "referencia": _load_reference(expected),
+                        "instrucao_pedagogica": get_system_prompt(),
+                        "contexto_enviado": sent_context,
                         "resposta_llm": answer,
                     }
                 )
 
-    # prompt do juiz (um batch por modo)
+    # O judge sees opaque IDs only.  The reproducible permutation helps reduce
+    # ordering/mode bias, while the local map preserves full traceability.
+    judge_seed = int(hashlib.sha256(run_id.encode()).hexdigest()[:16], 16)
+    judge_rng = random.Random(judge_seed)
+    judge_rng.shuffle(judge_items)
+    judge_map: dict[str, dict[str, str]] = {}
+    for index, item in enumerate(judge_items, 1):
+        judge_id = f"j{index:04d}-{hashlib.sha256((run_id + item['id'] + item['mode']).encode()).hexdigest()[:8]}"
+        item["judge_id"] = judge_id
+        judge_map[judge_id] = {
+            "run_id": run_id,
+            "query_id": str(item["id"]),
+            "mode": str(item["mode"]),
+        }
+    with (output / "judge_map.json").open("x", encoding="utf-8") as jf:
+        json.dump({"seed": judge_seed, "items": judge_map}, jf, ensure_ascii=False, indent=2)
+
     with open(judge_path, "w", encoding="utf-8") as jf:
-        for mode in ("rag", "no-rag"):
-            subset = [x for x in judge_items if x.get("mode") == mode]
-            jf.write(f"===== MODO: {mode} =====\n")
-            jf.write(judge_prompt.build_judge_batch(subset, mode))
-            jf.write("\n\n")
+        jf.write(judge_prompt.build_judge_batch(judge_items))
 
     summary = {
         **metrics.aggregate(per_query),
@@ -197,6 +305,14 @@ def run_eval(
         "no_rag_retrieval": None,
         "math_evaluation": math_evaluation.aggregate_math_evaluations(math_rows),
         "resource_measurements": summarize_stage_records(stage_records),
+        "manifest": {"run_id": manifest["run_id"], "path": "manifest.json"},
+        "judge": {
+            "rubric_version": judge_prompt.RUBRIC_VERSION,
+            "blind_order_seed": judge_seed,
+            "map_path": "judge_map.json",
+            "status": "awaiting_manual_review",
+        },
+        "paired_comparison": _paired_summary(records),
     }
     with (output / "metrics.json").open("w", encoding="utf-8") as mf:
         json.dump(summary, mf, ensure_ascii=False, indent=2, allow_nan=False)
@@ -258,7 +374,29 @@ def run_adaptive_k(
     print(f"Artefatos: {output}")
 
 
-def run_judge(output_dir: str) -> None:
+def _aggregate_judge_scores(scores: list[dict]) -> dict:
+    """Aggregate valid observations only; non-applicable grounding is excluded."""
+    groups: dict[tuple[str, str, str], list[int]] = {}
+    for score in scores:
+        for criterion, value in score["criteria"].items():
+            if criterion == "fundamentacao" and value.get("status") == "not_applicable":
+                continue
+            groups.setdefault((score["mode"], score["operation"], criterion), []).append(value["score"])
+
+    def summary(values: list[int]) -> dict:
+        return {
+            "mean": statistics.fmean(values) if values else None,
+            "population_stddev": statistics.pstdev(values) if len(values) > 1 else 0.0 if values else None,
+            "valid_count": len(values),
+        }
+
+    by_mode: dict[str, dict[str, dict]] = {}
+    for (mode, operation, criterion), values in groups.items():
+        by_mode.setdefault(mode, {}).setdefault(operation, {})[criterion] = summary(values)
+    return {"by_mode_and_operation": by_mode, "weighting": "none"}
+
+
+def run_judge(output_dir: str, judge_model: str | None = None) -> None:
     """Reaceita notas coladas do LLM de fronteira e consolida."""
     if not Path(output_dir).is_dir():
         raise ValueError("Diretório de avaliação inexistente")
@@ -272,34 +410,82 @@ def run_judge(output_dir: str) -> None:
         lines.append(line)
 
     text = "\n".join(lines)
+    output = Path(output_dir)
+    map_path = output / "judge_map.json"
+    results_path = output / "results.jsonl"
+    if not map_path.is_file() or not results_path.is_file():
+        raise ValueError("Avaliação não contém judge_map.json e results.jsonl da rubrica v2.")
+    score_path = output / "judge_scores.jsonl"
+    raw_path = output / "judge_raw.json"
+    if score_path.exists() or raw_path.exists():
+        raise FileExistsError("Notas do juiz já foram importadas para este diretório.")
     scores = judge_import.parse_judge_output(text)
+    judge_map = json.loads(map_path.read_text(encoding="utf-8"))["items"]
+    judge_ids = [score["id"] for score in scores]
+    if len(judge_ids) != len(set(judge_ids)):
+        raise ValueError("A saída do juiz contém IDs duplicados.")
+    unknown = set(judge_ids) - set(judge_map)
+    if unknown:
+        raise ValueError(f"A saída do juiz contém IDs desconhecidos: {sorted(unknown)}")
+    result_index = {
+        (str(row["id"]), str(row["mode"])): row
+        for row in (
+            json.loads(line) for line in results_path.read_text(encoding="utf-8").splitlines() if line
+        )
+    }
+    for score in scores:
+        mapping = judge_map[score["id"]]
+        result = result_index[(mapping["query_id"], mapping["mode"])]
+        score.update(
+            {
+                "run_id": mapping["run_id"],
+                "query_id": mapping["query_id"],
+                "mode": mapping["mode"],
+                "operation": result.get("operação", ""),
+            }
+        )
+    missing = sorted(set(judge_map) - set(judge_ids))
+    with raw_path.open("x", encoding="utf-8") as raw_file:
+        json.dump(
+            {
+                "imported_at": datetime.now(UTC).isoformat(),
+                "judge_model": judge_model or "not_declared",
+                "raw_output": text,
+                "missing_judge_ids": missing,
+            },
+            raw_file,
+            ensure_ascii=False,
+            indent=2,
+        )
 
-    scores_path = os.path.join(output_dir, "judge_scores.jsonl")
-    with open(scores_path, "w", encoding="utf-8") as f:
+    with score_path.open("x", encoding="utf-8") as f:
         for s in scores:
             f.write(json.dumps(s, ensure_ascii=False) + "\n")
 
     # consolida com métricas existentes
-    metrics_path = os.path.join(output_dir, "metrics.json")
-    if os.path.exists(metrics_path):
-        with open(metrics_path, encoding="utf-8") as f:
+    metrics_path = output / "metrics.json"
+    if metrics_path.exists():
+        with metrics_path.open(encoding="utf-8") as f:
             base = json.load(f)
     else:
         base = {}
 
-    by_mode: dict[str, list[int]] = {}
-    for s in scores:
-        by_mode.setdefault(s["mode"], []).append(s["score"])
-
+    if "judge_scores" in base:
+        base["judge_scores_legacy"] = base.pop("judge_scores")
     base["judge_scores"] = {
-        mode: {"mean": sum(v) / len(v), "count": len(v)} for mode, v in by_mode.items()
+        "rubric_version": judge_prompt.RUBRIC_VERSION,
+        "judge_model": judge_model or "not_declared",
+        "imported_count": len(scores),
+        "missing_count": len(missing),
+        "missing_judge_ids": missing,
+        **_aggregate_judge_scores(scores),
     }
 
-    with open(metrics_path, "w", encoding="utf-8") as f:
-        json.dump(base, f, ensure_ascii=False, indent=2)
+    with metrics_path.open("w", encoding="utf-8") as f:
+        json.dump(base, f, ensure_ascii=False, indent=2, allow_nan=False)
 
     print(f"✅ {len(scores)} notas importadas.")
-    print(f"   notas: {scores_path}")
+    print(f"   notas: {score_path}")
     print(f"   métricas atualizadas: {metrics_path}")
 
 
@@ -314,6 +500,7 @@ def main() -> None:
     parser.add_argument(
         "--output-dir", help="Novo diretório para avaliação; existente para --judge"
     )
+    parser.add_argument("--judge-model", help="Modelo/versão declarado pelo avaliador manual")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--eval", action="store_true", help="Roda o pipeline (rag/no-rag)")
     group.add_argument("--adaptive-k", action="store_true", help="Mede hit@k/MRR")
@@ -329,7 +516,7 @@ def main() -> None:
     elif args.judge:
         if not args.output_dir:
             parser.error("--judge requer --output-dir da avaliação a consolidar")
-        run_judge(args.output_dir)
+        run_judge(args.output_dir, args.judge_model)
 
 
 if __name__ == "__main__":

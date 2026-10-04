@@ -80,12 +80,15 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    if not os.path.exists(CSV_PATH):
+    if not args.no_rag and not os.path.exists(CSV_PATH):
         print(f"❌ CSV não encontrado em: {CSV_PATH}")
         print("   Coloque o arquivo base_com_operacao.csv em pipeline/data/ e tente novamente.")
         sys.exit(1)
 
-    _run_ingest()
+    if not args.no_rag:
+        _run_ingest()
+    else:
+        print("ℹ️  Modo --no-rag: banco vetorial e embeddings não são necessários.")
     _ask_loop(use_rag=not args.no_rag)
 
 
