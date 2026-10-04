@@ -23,6 +23,8 @@ from pipeline.config import (
     EMBED_MODEL,
     OLLAMA_HOST,
     TOP_K,
+    RERANK_CANDIDATE_K,
+    RERANK_ENABLED,
     VECTOR_DB_PATH,
 )
 
@@ -48,7 +50,14 @@ def _get_connection() -> sqlite3.Connection:
     return db
 
 
-def search(query: str, top_k: int = TOP_K) -> list[dict[str, Any]]:
+def search(
+    query: str,
+    top_k: int = TOP_K,
+    *,
+    rerank_enabled: bool = RERANK_ENABLED,
+    candidate_k: int = RERANK_CANDIDATE_K,
+    return_rerank_trace: bool = False,
+) -> list[dict[str, Any]] | tuple[list[dict[str, Any]], list[dict[str, Any]] | None]:
     """
     Busca as TOP_K linhas mais similares à query.
 
@@ -56,6 +65,8 @@ def search(query: str, top_k: int = TOP_K) -> list[dict[str, Any]]:
         rowid, csv_id, nivel, questao, comparacao,
         resposta_contextualizada, distance
     """
+    if top_k <= 0 or candidate_k < top_k:
+        raise ValueError("candidate_k deve ser maior ou igual a top_k, ambos positivos")
     query_vec = _embed(query)
     query_blob = _serialize_f32(query_vec)
 
@@ -79,7 +90,7 @@ def search(query: str, top_k: int = TOP_K) -> list[dict[str, Any]]:
             AND v.k = ?
         ORDER BY v.distance
         """,
-        (query_blob, top_k),
+        (query_blob, candidate_k if rerank_enabled else top_k),
     ).fetchall()
 
     db.close()
@@ -98,7 +109,12 @@ def search(query: str, top_k: int = TOP_K) -> list[dict[str, Any]]:
                 "resposta_contextualizada": row[7],
             }
         )
-    return results
+    if rerank_enabled:
+        from pipeline.core.reranking import rerank_with_trace
+
+        selected, trace = rerank_with_trace(query, results, top_k)
+        return (selected, trace) if return_rerank_trace else selected
+    return (results, None) if return_rerank_trace else results
 
 
 def corpus_ids() -> list[str]:

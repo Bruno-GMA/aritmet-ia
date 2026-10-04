@@ -53,9 +53,18 @@ def _sha256(path: str | Path) -> str:
     return digest.hexdigest()
 
 
-def _write_manifest(output: Path, eval_set_path: str, qrels_path: str | None) -> dict:
+def _write_manifest(
+    output: Path, eval_set_path: str, qrels_path: str | None, rerank_enabled: bool = False
+) -> dict:
     """Persist conditions shared by both modes before any model call."""
-    from pipeline.config import CHAT_MODEL, CSV_PATH, EMBED_MODEL, VECTOR_DB_PATH
+    from pipeline.config import (
+        CHAT_MODEL,
+        CSV_PATH,
+        EMBED_MODEL,
+        RERANK_CANDIDATE_K,
+        TOP_K,
+        VECTOR_DB_PATH,
+    )
 
     manifest = {
         "schema_version": 1,
@@ -67,6 +76,13 @@ def _write_manifest(output: Path, eval_set_path: str, qrels_path: str | None) ->
         "seed": None,
         "generation": {"model": CHAT_MODEL, "output_budget": None},
         "embedding_model": EMBED_MODEL,
+        "reranking": {
+            "enabled": rerank_enabled,
+            "candidate_k": RERANK_CANDIDATE_K,
+            "final_k": TOP_K,
+            "method": "distance-operation-v1",
+            "decision_threshold": "pre_registered: report only; no automatic enablement",
+        },
         "inputs": {
             "evaluation_set": {"path": str(Path(eval_set_path).resolve()), "sha256": _sha256(eval_set_path)},
             "corpus": {"path": str(Path(CSV_PATH).resolve()), "sha256": _sha256(CSV_PATH)},
@@ -164,7 +180,10 @@ def _run_ingest_if_needed() -> bool:
 
 
 def run_eval(
-    eval_set_path: str, qrels_path: str | None = None, output_dir: str | None = None
+    eval_set_path: str,
+    qrels_path: str | None = None,
+    output_dir: str | None = None,
+    rerank_enabled: bool = False,
 ) -> None:
     """Roda o pipeline em cada amostra, nos modos rag e no-rag."""
     _run_ingest_if_needed()
@@ -173,7 +192,7 @@ def run_eval(
     corpus_ids = retrieval.corpus_ids()
     qrels = _load_qrels(qrels_path, corpus_ids)
     output = _new_output_dir(output_dir)
-    manifest = _write_manifest(output, eval_set_path, qrels_path)
+    manifest = _write_manifest(output, eval_set_path, qrels_path, rerank_enabled)
     results_path = output / "results.jsonl"
     judge_path = output / "judge_prompt.txt"
     per_query: list[dict] = []
@@ -197,6 +216,7 @@ def run_eval(
                 context: list[dict] = []
                 profiler_retrieval: dict | None = None
                 retrieval_quality: dict | None = None
+                rerank_trace: list[dict] | None = None
                 ids: list[str] = []
                 ops: list[str] = []
 
@@ -205,7 +225,13 @@ def run_eval(
                         with Profiler(
                             "retrieval", run_id=run_id, query_id=sample["id"], mode=mode
                         ) as p:
-                            context = retrieval.search(query, top_k=TOP_K)
+                            found = retrieval.search(
+                                query,
+                                top_k=TOP_K,
+                                rerank_enabled=rerank_enabled,
+                                return_rerank_trace=True,
+                            )
+                            context, rerank_trace = found  # type: ignore[misc]
                         profiler_retrieval = p.result
                         if profiler_retrieval:
                             stage_records.append(profiler_retrieval)
@@ -243,6 +269,13 @@ def run_eval(
                     "csv_id_esperado": expected,
                     "contexto_recuperado": ids,
                     "contexto_enviado": sent_context,
+                    "reranking": {
+                        "enabled": rerank_enabled,
+                        "candidate_k": manifest["reranking"]["candidate_k"],
+                        "final_k": TOP_K,
+                        "method": manifest["reranking"]["method"] if rerank_enabled else None,
+                        "candidates": rerank_trace,
+                    },
                     "resposta_llm": answer,
                     "math_evaluation": math_result,
                     "retrieval_quality": retrieval_quality,
@@ -497,6 +530,7 @@ def main() -> None:
         help="Caminho do eval_set.jsonl",
     )
     parser.add_argument("--qrels", help="Julgamentos de relevância JSON versionados")
+    parser.add_argument("--rerank", action="store_true", help="Ativa reranking experimental no modo RAG")
     parser.add_argument(
         "--output-dir", help="Novo diretório para avaliação; existente para --judge"
     )
@@ -510,7 +544,7 @@ def main() -> None:
     eval_set_path = os.path.abspath(args.eval_set)
 
     if args.eval:
-        run_eval(eval_set_path, args.qrels, args.output_dir)
+        run_eval(eval_set_path, args.qrels, args.output_dir, args.rerank)
     elif args.adaptive_k:
         run_adaptive_k(eval_set_path, args.qrels, args.output_dir)
     elif args.judge:
