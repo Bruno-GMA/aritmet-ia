@@ -29,7 +29,7 @@ def _run_ingest() -> None:
     print(f"✅ {count} linhas indexadas com sucesso!\n")
 
 
-def _ask_loop(use_rag: bool) -> None:
+def _ask_loop(use_rag: bool, rerank: bool = False) -> None:
     """Loop principal de perguntas."""
     print("=" * 60)
     print("  aritmet.IA — Assistente de Matemática (RAG local)")
@@ -58,7 +58,7 @@ def _ask_loop(use_rag: bool) -> None:
         # ── Retrieval (pulado em --no-rag) ──────────────────
         if use_rag:
             print("🔍 Buscando contexto relevante...")
-            context = retrieval.search(query_final)
+            context = retrieval.search(query_final, rerank_enabled=rerank)
 
             if not context:
                 print("⚠️  Nenhum resultado encontrado no banco vetorial.\n")
@@ -78,6 +78,7 @@ def main() -> None:
         action="store_true",
         help="Pula a etapa de retrieval (baseline sem contexto).",
     )
+    parser.add_argument("--rerank", action="store_true", help="Reordena candidatos antes da geração.")
     args = parser.parse_args()
 
     if not args.no_rag and not os.path.exists(CSV_PATH):
@@ -89,7 +90,7 @@ def main() -> None:
         _run_ingest()
     else:
         print("ℹ️  Modo --no-rag: banco vetorial e embeddings não são necessários.")
-    _ask_loop(use_rag=not args.no_rag)
+    _ask_loop(use_rag=not args.no_rag, rerank=args.rerank and not args.no_rag)
 
 
 if __name__ == "__main__":
