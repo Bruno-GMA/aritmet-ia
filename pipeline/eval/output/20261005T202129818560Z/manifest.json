@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "run_id": "20261005T202129818560Z",
+  "project": "aritmet.IA",
+  "modes": [
+    "rag",
+    "no-rag"
+  ],
+  "mode_order": [
+    "rag",
+    "no-rag"
+  ],
+  "repetitions": 1,
+  "seed": null,
+  "generation": {
+    "model": "gemma3:4b",
+    "output_budget": null
+  },
+  "embedding_model": "nomic-embed-text",
+  "reranking": {
+    "enabled": false,
+    "candidate_k": 9,
+    "final_k": 3,
+    "method": "distance-operation-v1",
+    "decision_threshold": "pre_registered: report only; no automatic enablement"
+  },
+  "inputs": {
+    "evaluation_set": {
+      "path": "/home/bruno/Documentos/faculdade/PIBITI/pipelines/aritmet.ia/pipeline/data/eval_set.jsonl",
+      "sha256": "e643b94b77bce30fb0c3aab110e9f000f891bfd612f6361327fd16ad96fb7e7f"
+    },
+    "corpus": {
+      "path": "/home/bruno/Documentos/faculdade/PIBITI/pipelines/aritmet.ia/pipeline/data/base_com_operacao.csv",
+      "sha256": "ab97c4afcd01412be24cc5fb25ba93ceec91a8bdb022e66e5fab8e0d2bde9c3b"
+    },
+    "qrels": null,
+    "vector_index": "/home/bruno/Documentos/faculdade/PIBITI/pipelines/aritmet.ia/pipeline/storage/vector_store.db"
+  },
+  "notes": {
+    "retrieval_metrics_no_rag": "not_applicable",
+    "cache_policy": "no response cache; the vector corpus is shared read-only"
+  }
+}

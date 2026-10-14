@@ -1,0 +1,365 @@
+{
+  "seed": 16541254124344616616,
+  "items": {
+    "j0001-576d8244": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_1",
+      "mode": "rag"
+    },
+    "j0002-c6306b54": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_337",
+      "mode": "rag"
+    },
+    "j0003-d59efb09": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_352",
+      "mode": "no-rag"
+    },
+    "j0004-ebeed3a7": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_358",
+      "mode": "no-rag"
+    },
+    "j0005-2f7fc591": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_18",
+      "mode": "no-rag"
+    },
+    "j0006-7ba25342": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_651",
+      "mode": "no-rag"
+    },
+    "j0007-8e84222f": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_284",
+      "mode": "no-rag"
+    },
+    "j0008-08e57a39": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_1",
+      "mode": "no-rag"
+    },
+    "j0009-0ec8648c": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_14",
+      "mode": "rag"
+    },
+    "j0010-05a9bbae": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_278",
+      "mode": "no-rag"
+    },
+    "j0011-df1031d6": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_337",
+      "mode": "no-rag"
+    },
+    "j0012-74134fd3": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_18",
+      "mode": "rag"
+    },
+    "j0013-14b62d60": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_284",
+      "mode": "rag"
+    },
+    "j0014-f918f855": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_16",
+      "mode": "rag"
+    },
+    "j0015-79090304": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_285",
+      "mode": "rag"
+    },
+    "j0016-f57f5156": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_447",
+      "mode": "no-rag"
+    },
+    "j0017-f998e093": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_16",
+      "mode": "no-rag"
+    },
+    "j0018-ea70374b": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_347",
+      "mode": "rag"
+    },
+    "j0019-2d8b3ac9": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_5",
+      "mode": "no-rag"
+    },
+    "j0020-db080f29": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_261",
+      "mode": "no-rag"
+    },
+    "j0021-29eb7c91": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_278",
+      "mode": "rag"
+    },
+    "j0022-4be49b58": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_12",
+      "mode": "rag"
+    },
+    "j0023-da56d73c": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_6",
+      "mode": "no-rag"
+    },
+    "j0024-6449cba5": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_2",
+      "mode": "no-rag"
+    },
+    "j0025-33e5c44c": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_198",
+      "mode": "rag"
+    },
+    "j0026-cf7c31c9": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_358",
+      "mode": "rag"
+    },
+    "j0027-e8155cde": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_12",
+      "mode": "no-rag"
+    },
+    "j0028-10f8de67": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_33",
+      "mode": "rag"
+    },
+    "j0029-31278aa1": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_822",
+      "mode": "no-rag"
+    },
+    "j0030-b8606201": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_417",
+      "mode": "no-rag"
+    },
+    "j0031-a2ce3057": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_826",
+      "mode": "rag"
+    },
+    "j0032-e8f628a5": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_9",
+      "mode": "rag"
+    },
+    "j0033-0881dbfd": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_427",
+      "mode": "no-rag"
+    },
+    "j0034-c60f461b": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_33",
+      "mode": "no-rag"
+    },
+    "j0035-d1e56494": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_14",
+      "mode": "no-rag"
+    },
+    "j0036-e9c2cec1": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_314",
+      "mode": "no-rag"
+    },
+    "j0037-765fe97e": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_826",
+      "mode": "no-rag"
+    },
+    "j0038-e72af6f4": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_347",
+      "mode": "no-rag"
+    },
+    "j0039-0d668d54": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_198",
+      "mode": "no-rag"
+    },
+    "j0040-bc771a12": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_4",
+      "mode": "no-rag"
+    },
+    "j0041-e7b387df": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_427",
+      "mode": "rag"
+    },
+    "j0042-adca88e9": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_667",
+      "mode": "rag"
+    },
+    "j0043-aebe0262": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_281",
+      "mode": "rag"
+    },
+    "j0044-0ab509bc": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_393",
+      "mode": "no-rag"
+    },
+    "j0045-1b2cbb7f": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_3",
+      "mode": "no-rag"
+    },
+    "j0046-192f9a2c": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_9",
+      "mode": "no-rag"
+    },
+    "j0047-ecc1c4b6": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_626",
+      "mode": "rag"
+    },
+    "j0048-db030689": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_4",
+      "mode": "rag"
+    },
+    "j0049-bbf61f87": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_706",
+      "mode": "rag"
+    },
+    "j0050-8b70d2c7": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_352",
+      "mode": "rag"
+    },
+    "j0051-73eebc4a": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_390",
+      "mode": "rag"
+    },
+    "j0052-7d45a99e": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_2",
+      "mode": "rag"
+    },
+    "j0053-a8ebc35f": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_3",
+      "mode": "rag"
+    },
+    "j0054-3e1f6924": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_875",
+      "mode": "no-rag"
+    },
+    "j0055-ec5e9782": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_390",
+      "mode": "no-rag"
+    },
+    "j0056-51d7b0d2": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_875",
+      "mode": "rag"
+    },
+    "j0057-bb315a63": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_281",
+      "mode": "no-rag"
+    },
+    "j0058-25a0d4f5": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_417",
+      "mode": "rag"
+    },
+    "j0059-abc529e1": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_393",
+      "mode": "rag"
+    },
+    "j0060-0edc9672": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_820",
+      "mode": "rag"
+    },
+    "j0061-bc030d15": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_314",
+      "mode": "rag"
+    },
+    "j0062-a8e5cbad": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_447",
+      "mode": "rag"
+    },
+    "j0063-a169029a": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_822",
+      "mode": "rag"
+    },
+    "j0064-3160e751": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_820",
+      "mode": "no-rag"
+    },
+    "j0065-e1003331": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_651",
+      "mode": "rag"
+    },
+    "j0066-efd36e3e": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_285",
+      "mode": "no-rag"
+    },
+    "j0067-7c20d879": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_667",
+      "mode": "no-rag"
+    },
+    "j0068-083a1a64": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_5",
+      "mode": "rag"
+    },
+    "j0069-22c2c105": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_626",
+      "mode": "no-rag"
+    },
+    "j0070-941d2a52": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_6",
+      "mode": "rag"
+    },
+    "j0071-d11458e9": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_706",
+      "mode": "no-rag"
+    },
+    "j0072-f2e332d1": {
+      "run_id": "20261005T202129818560Z",
+      "query_id": "eval_261",
+      "mode": "rag"
+    }
+  }
+}
